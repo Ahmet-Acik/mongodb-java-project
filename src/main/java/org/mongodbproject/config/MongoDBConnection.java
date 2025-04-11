@@ -14,7 +14,12 @@ public class MongoDBConnection {
     static {
         Properties properties = new Properties();
         try {
-            properties.load(MongoDBConnection.class.getClassLoader().getResourceAsStream("application.properties"));
+            var inputStream = MongoDBConnection.class.getClassLoader().getResourceAsStream("application.properties");
+            if (inputStream == null) {
+                throw new RuntimeException("application.properties file not found in the classpath");
+            }
+            properties.load(inputStream);
+
             String host = properties.getProperty("spring.data.mongodb.host", "localhost");
             String port = properties.getProperty("spring.data.mongodb.port", "27017");
             CONNECTION_STRING = "mongodb://" + host + ":" + port;
