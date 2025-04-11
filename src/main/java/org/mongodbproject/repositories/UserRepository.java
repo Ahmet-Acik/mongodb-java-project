@@ -22,18 +22,26 @@ public class UserRepository {
     }
 
     public void insertUser(User user) {
-        logger.info("Inserting user: {}", user);
-        collection.insertOne(user.toDocument());
-        logger.info("User inserted successfully: {}", user);
+        try {
+            logger.info("Inserting user: {}", user);
+            collection.insertOne(user.toDocument());
+            logger.info("User inserted successfully: {}", user);
+        } catch (Exception e) {
+            logger.error("Error inserting user: {}", e.getMessage(), e);
+        }
     }
 
     public List<User> getAllUsers() {
-        logger.info("Retrieving all users from the database");
         List<User> users = new ArrayList<>();
-        for (Document doc : collection.find()) {
-            users.add(User.fromDocument(doc));
+        try {
+            logger.info("Retrieving all users from the database");
+            for (Document doc : collection.find()) {
+                users.add(User.fromDocument(doc));
+            }
+            logger.info("Retrieved {} users from the database", users.size());
+        } catch (Exception e) {
+            logger.error("Error retrieving users: {}", e.getMessage(), e);
         }
-        logger.info("Retrieved {} users from the database", users.size());
         return users;
     }
 }
