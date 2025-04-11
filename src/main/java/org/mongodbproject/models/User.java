@@ -54,14 +54,18 @@ public class User {
     }
 
     public Document toDocument() {
-        Document addressDoc = new Document("street", address.getStreet())
-                .append("city", address.getCity())
-                .append("zipCode", address.getZipCode());
+        Document document = new Document()
+                .append("name", name)
+                .append("email", email);
 
-        return new Document("name", name)
-                .append("email", email)
-                .append("address", addressDoc)
-                .append("hobbies", hobbies);
+        if (address != null) {
+            document.append("address", new Document()
+                    .append("street", address.getStreet())
+                    .append("city", address.getCity())
+                    .append("zipCode", address.getZipCode()));
+        }
+
+        return document;
     }
 
     public static User fromDocument(Document document) {
