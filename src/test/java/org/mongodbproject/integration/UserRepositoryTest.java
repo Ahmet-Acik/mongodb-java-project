@@ -23,4 +23,12 @@ public class UserRepositoryTest {
         List<User> users = userRepository.getAllUsers();
         assertThat(users).isNotEmpty();
     }
+    @Test
+    public void testGetAllUsers() {
+        UserRepository userRepository = new UserRepository();
+
+        List<User> users = userRepository.getAllUsers();
+        assertThat(users).isNotEmpty();
+    }
+
 }
