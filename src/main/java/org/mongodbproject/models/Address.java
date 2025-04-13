@@ -1,5 +1,7 @@
 package org.mongodbproject.models;
 
+import org.bson.Document;
+
 public class Address {
     private String street;
     private String city;
@@ -29,4 +31,21 @@ public class Address {
     public void setZipCode(String zipCode) {
         this.zipCode = zipCode;
     }
+
+    public Document toDocument() {
+        Document document = new Document();
+        document.put("street", street);
+        document.put("city", city);
+        document.put("zipCode", zipCode);
+        return document;
+    }
+
+    public static Address fromDocument(Document document) {
+        Address address = new Address();
+        address.setStreet(document.getString("street"));
+        address.setCity(document.getString("city"));
+        address.setZipCode(document.getString("zipCode"));
+        return address;
+    }
+
 }
