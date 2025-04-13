@@ -3,6 +3,7 @@ package org.mongodbproject.repositories;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
+import org.bson.types.ObjectId;
 import org.mongodbproject.config.MongoDBConnection;
 import org.mongodbproject.models.User;
 import org.slf4j.Logger;
@@ -24,10 +25,29 @@ public class UserRepository {
     public void insertUser(User user) {
         try {
             logger.info("Inserting user: {}", user);
-            collection.insertOne(user.toDocument());
+            Document document = user.toDocument(); // Convert User to MongoDB Document
+            collection.insertOne(document); // Insert the document into the collection
+            user.setId(document.getObjectId("_id").toHexString()); // Set the generated ID back to the User object
             logger.info("User inserted successfully: {}", user);
         } catch (Exception e) {
             logger.error("Error inserting user: {}", e.getMessage(), e);
+        }
+    }
+
+    public User getUserById(String someUserId) {
+        try {
+            logger.info("Retrieving user by ID: {}", someUserId);
+            ObjectId objectId = new ObjectId(someUserId); // Convert String to ObjectId
+            Document doc = collection.find(new Document("_id", objectId)).first();
+            if (doc != null) {
+                return User.fromDocument(doc);
+            } else {
+                logger.warn("No user found with ID: {}", someUserId);
+                return null;
+            }
+        } catch (Exception e) {
+            logger.error("Error retrieving user by ID: {}", e.getMessage(), e);
+            return null;
         }
     }
 
