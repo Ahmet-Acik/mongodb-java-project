@@ -51,4 +51,17 @@ public class UserRepositoryTest {
         assertThat(retrievedUser.getName()).isEqualTo("John Doe");
         assertThat(retrievedUser.getEmail()).isEqualTo("john.doe@example.com");
     }
+
+    @Test
+    public void testGetUserByInvalidId() {
+        UserRepository userRepository = new UserRepository();
+
+        // Attempt to retrieve a user with an invalid ID
+        String invalidId = "invalid_id";
+        User retrievedUser = userRepository.getUserById(invalidId);
+
+        // Assertions
+        assertThat(retrievedUser).isNull();
+    }
+
 }
