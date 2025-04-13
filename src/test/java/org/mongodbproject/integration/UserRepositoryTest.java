@@ -105,5 +105,29 @@ public class UserRepositoryTest {
         assertThat(users).isEmpty();
     }
 
+    @Test
+    public void testUpdateUser() {
+        UserRepository userRepository = new UserRepository();
+
+        User user = new User();
+        user.setName("John Smith");
+        user.setEmail("john.smith@example.com");
+        userRepository.insertUser(user);
+
+        String userId = user.getId();
+        User retrievedUser = userRepository.getUserById(userId);
+        assertThat(retrievedUser).isNotNull();
+
+        // Update user details
+        retrievedUser.setName("John Updated");
+        retrievedUser.setEmail("john.updated@example.com");
+        userRepository.insertUser(retrievedUser);
+
+        User updatedUser = userRepository.getUserById(userId);
+        assertThat(updatedUser).isNotNull();
+        assertThat(updatedUser.getName()).isEqualTo("John Updated");
+        assertThat(updatedUser.getEmail()).isEqualTo("john.updated@example.com");
+    }
+
 
 }
