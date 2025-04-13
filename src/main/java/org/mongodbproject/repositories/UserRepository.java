@@ -64,4 +64,11 @@ public class UserRepository {
         }
         return users;
     }
+    public void deleteUserById(String userId) {
+        try {
+            collection.deleteOne(new Document("_id", new ObjectId(userId)));
+        } catch (Exception e) {
+            logger.error("Error deleting user: {}", e.getMessage(), e);
+        }
+    }
 }
