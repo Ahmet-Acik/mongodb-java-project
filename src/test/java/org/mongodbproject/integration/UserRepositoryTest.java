@@ -96,7 +96,7 @@ public class UserRepositoryTest {
         User user = createTestUser("Alice", "alice@example.com");
         userRepository.insertUser(user);
 
-        userRepository.getAllUsers().remove(user);
+        userRepository.deleteUserById(user.getId());
 
         User deletedUser = userRepository.getUserById(user.getId());
         assertThat(deletedUser).isNull();
