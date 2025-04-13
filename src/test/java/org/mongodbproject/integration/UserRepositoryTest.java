@@ -128,6 +128,24 @@ public class UserRepositoryTest {
         assertThat(updatedUser.getName()).isEqualTo("John Updated");
         assertThat(updatedUser.getEmail()).isEqualTo("john.updated@example.com");
     }
+    @Test
+    public void testDeleteUser() {
+        UserRepository userRepository = new UserRepository();
 
+        User user = new User();
+        user.setName("Alice");
+        user.setEmail("alice@example.com");
+        userRepository.insertUser(user);
+
+        String userId = user.getId();
+        User retrievedUser = userRepository.getUserById(userId);
+        assertThat(retrievedUser).isNotNull();
+
+        // Delete user
+        userRepository.getAllUsers().remove(retrievedUser);
+
+        User deletedUser = userRepository.getUserById(userId);
+        assertThat(deletedUser).isNull();
+    }
 
 }
