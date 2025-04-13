@@ -64,16 +64,17 @@ public class User {
                     .append("city", address.getCity())
                     .append("zipCode", address.getZipCode()));
         }
-
+        if (this.hobbies != null) {
+            document.append("hobbies", this.hobbies);
+        }
         return document;
     }
 
     public static User fromDocument(Document document) {
         User user = new User();
-        user.setId(document.getObjectId("_id").toString());
+        user.setId(document.getObjectId("_id").toHexString());
         user.setName(document.getString("name"));
         user.setEmail(document.getString("email"));
-
         Document addressDoc = document.get("address", Document.class);
         if (addressDoc != null) {
             Address address = new Address();
@@ -82,8 +83,10 @@ public class User {
             address.setZipCode(addressDoc.getString("zipCode"));
             user.setAddress(address);
         }
-
-        user.setHobbies(document.getList("hobbies", String.class));
+        List<String> hobbies = document.getList("hobbies", String.class);
+        if (hobbies != null) {
+            user.setHobbies(hobbies);
+        }
         return user;
     }
 }
