@@ -23,6 +23,7 @@ public class UserRepositoryTest {
         List<User> users = userRepository.getAllUsers();
         assertThat(users).isNotEmpty();
     }
+
     @Test
     public void testGetAllUsers() {
         UserRepository userRepository = new UserRepository();
@@ -31,4 +32,23 @@ public class UserRepositoryTest {
         assertThat(users).isNotEmpty();
     }
 
+    @Test
+    public void testGetUserById() {
+        UserRepository userRepository = new UserRepository();
+
+        // Insert a user and retrieve the generated ID
+        User user = new User();
+        user.setName("John Doe");
+        user.setEmail("john.doe@example.com");
+        userRepository.insertUser(user);
+
+        // Fetch the user by ID
+        String userId = user.getId(); // Assuming `insertUser` sets the ID on the user object
+        User retrievedUser = userRepository.getUserById(userId);
+
+        // Assertions
+        assertThat(retrievedUser).isNotNull();
+        assertThat(retrievedUser.getName()).isEqualTo("John Doe");
+        assertThat(retrievedUser.getEmail()).isEqualTo("john.doe@example.com");
+    }
 }
