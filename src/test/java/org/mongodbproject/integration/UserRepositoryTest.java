@@ -1,151 +1,119 @@
 package org.mongodbproject.integration;
 
-import org.mongodbproject.models.Address;
-import org.mongodbproject.models.User;
-import org.mongodbproject.repositories.UserRepository;
-import org.junit.jupiter.api.Test;
+        import org.junit.jupiter.api.BeforeEach;
+        import org.junit.jupiter.api.Test;
+        import org.mongodbproject.models.Address;
+        import org.mongodbproject.models.User;
+        import org.mongodbproject.repositories.UserRepository;
 
-import java.util.ArrayList;
-import java.util.List;
+        import java.util.ArrayList;
+        import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+        import static org.assertj.core.api.Assertions.assertThat;
 
-public class UserRepositoryTest {
+        public class UserRepositoryTest {
 
-    @Test
-    public void testInsertAndRetrieveUser() {
-        UserRepository userRepository = new UserRepository();
+            private UserRepository userRepository;
 
-        User user = new User();
-        user.setName("John Doe");
-        user.setEmail("john.doe@example.com");
+            @BeforeEach
+            public void setUp() {
+                userRepository = new UserRepository();
+                // Clean up the database to ensure test isolation
+                userRepository.getAllUsers().forEach(user -> userRepository.getAllUsers().remove(user));
+            }
 
-        userRepository.insertUser(user);
+            @Test
+            public void shouldInsertAndRetrieveUser() {
+                User user = createTestUser("John Doe", "john.doe@example.com");
+                userRepository.insertUser(user);
 
-        List<User> users = userRepository.getAllUsers();
-        assertThat(users).isNotEmpty();
-    }
+                List<User> users = userRepository.getAllUsers();
+                assertThat(users).hasSize(1);
+                assertThat(users.get(0).getName()).isEqualTo("John Doe");
+            }
 
-    @Test
-    public void testGetAllUsers() {
-        UserRepository userRepository = new UserRepository();
+            @Test
+            public void shouldRetrieveAllUsers() {
+                userRepository.insertUser(createTestUser("User1", "user1@example.com"));
+                userRepository.insertUser(createTestUser("User2", "user2@example.com"));
 
-        List<User> users = userRepository.getAllUsers();
-        assertThat(users).isNotEmpty();
-    }
+                List<User> users = userRepository.getAllUsers();
+                assertThat(users).hasSize(2);
+            }
 
-    @Test
-    public void testGetUserById() {
-        UserRepository userRepository = new UserRepository();
+            @Test
+            public void shouldRetrieveUserById() {
+                User user = createTestUser("John Doe", "john.doe@example.com");
+                userRepository.insertUser(user);
 
-        // Insert a user and retrieve the generated ID
-        User user = new User();
-        user.setName("John Doe");
-        user.setEmail("john.doe@example.com");
-        userRepository.insertUser(user);
+                User retrievedUser = userRepository.getUserById(user.getId());
+                assertThat(retrievedUser).isNotNull();
+                assertThat(retrievedUser.getName()).isEqualTo("John Doe");
+            }
 
-        // Fetch the user by ID
-        String userId = user.getId(); // Assuming `insertUser` sets the ID on the user object
-        User retrievedUser = userRepository.getUserById(userId);
+            @Test
+            public void shouldReturnNullForInvalidId() {
+                User retrievedUser = userRepository.getUserById("invalid_id");
+                assertThat(retrievedUser).isNull();
+            }
 
-        // Assertions
-        assertThat(retrievedUser).isNotNull();
-        assertThat(retrievedUser.getName()).isEqualTo("John Doe");
-        assertThat(retrievedUser.getEmail()).isEqualTo("john.doe@example.com");
-    }
+            @Test
+            public void shouldInsertUserWithAddressAndHobbies() {
+                User user = createTestUser("Jane Doe", "jane.doe@example.com");
+                user.setAddress(createTestAddress());
+                user.setHobbies(List.of("Reading", "Traveling"));
 
-    @Test
-    public void testGetUserByInvalidId() {
-        UserRepository userRepository = new UserRepository();
+                userRepository.insertUser(user);
 
-        // Attempt to retrieve a user with an invalid ID
-        String invalidId = "invalid_id";
-        User retrievedUser = userRepository.getUserById(invalidId);
+                User retrievedUser = userRepository.getUserById(user.getId());
+                assertThat(retrievedUser).isNotNull();
+                assertThat(retrievedUser.getAddress().getCity()).isEqualTo("Springfield");
+                assertThat(retrievedUser.getHobbies()).containsExactly("Reading", "Traveling");
+            }
 
-        // Assertions
-        assertThat(retrievedUser).isNull();
-    }
+            @Test
+            public void shouldReturnEmptyListWhenNoUsersExist() {
+                List<User> users = userRepository.getAllUsers();
+                assertThat(users).isEmpty();
+            }
 
-    @Test
-    public void testInsertUserWithAddressAndHobbies() {
-        UserRepository userRepository = new UserRepository();
+            @Test
+            public void shouldUpdateUserDetails() {
+                User user = createTestUser("John Smith", "john.smith@example.com");
+                userRepository.insertUser(user);
 
-        User user = new User();
-        user.setName("Jane Doe");
-        user.setEmail("jane.doe@example.com");
+                user.setName("John Updated");
+                user.setEmail("john.updated@example.com");
+                userRepository.insertUser(user);
 
-        Address address = new Address();
-        address.setStreet("123 Main St");
-        address.setCity("Springfield");
-        address.setZipCode("12345");
-        user.setAddress(address);
+                User updatedUser = userRepository.getUserById(user.getId());
+                assertThat(updatedUser).isNotNull();
+                assertThat(updatedUser.getName()).isEqualTo("John Updated");
+            }
 
-        List<String> hobbies = new ArrayList<>();
-        hobbies.add("Reading");
-        hobbies.add("Traveling");
-        user.setHobbies(hobbies);
+            @Test
+            public void shouldDeleteUser() {
+                User user = createTestUser("Alice", "alice@example.com");
+                userRepository.insertUser(user);
 
-        userRepository.insertUser(user);
+                userRepository.getAllUsers().remove(user);
 
-        String userId = user.getId();
-        User retrievedUser = userRepository.getUserById(userId);
+                User deletedUser = userRepository.getUserById(user.getId());
+                assertThat(deletedUser).isNull();
+            }
 
-        assertThat(retrievedUser).isNotNull();
-        assertThat(retrievedUser.getName()).isEqualTo("Jane Doe");
-        assertThat(retrievedUser.getAddress().getCity()).isEqualTo("Springfield");
-        assertThat(retrievedUser.getHobbies()).containsExactly("Reading", "Traveling");
-    }
+            private User createTestUser(String name, String email) {
+                User user = new User();
+                user.setName(name);
+                user.setEmail(email);
+                return user;
+            }
 
-    @Test
-    public void testGetAllUsersWhenCollectionIsEmpty() {
-        UserRepository userRepository = new UserRepository();
-
-        List<User> users = userRepository.getAllUsers();
-
-        assertThat(users).isEmpty();
-    }
-
-    @Test
-    public void testUpdateUser() {
-        UserRepository userRepository = new UserRepository();
-
-        User user = new User();
-        user.setName("John Smith");
-        user.setEmail("john.smith@example.com");
-        userRepository.insertUser(user);
-
-        String userId = user.getId();
-        User retrievedUser = userRepository.getUserById(userId);
-        assertThat(retrievedUser).isNotNull();
-
-        // Update user details
-        retrievedUser.setName("John Updated");
-        retrievedUser.setEmail("john.updated@example.com");
-        userRepository.insertUser(retrievedUser);
-
-        User updatedUser = userRepository.getUserById(userId);
-        assertThat(updatedUser).isNotNull();
-        assertThat(updatedUser.getName()).isEqualTo("John Updated");
-        assertThat(updatedUser.getEmail()).isEqualTo("john.updated@example.com");
-    }
-    @Test
-    public void testDeleteUser() {
-        UserRepository userRepository = new UserRepository();
-
-        User user = new User();
-        user.setName("Alice");
-        user.setEmail("alice@example.com");
-        userRepository.insertUser(user);
-
-        String userId = user.getId();
-        User retrievedUser = userRepository.getUserById(userId);
-        assertThat(retrievedUser).isNotNull();
-
-        // Delete user
-        userRepository.getAllUsers().remove(retrievedUser);
-
-        User deletedUser = userRepository.getUserById(userId);
-        assertThat(deletedUser).isNull();
-    }
-
-}
+            private Address createTestAddress() {
+                Address address = new Address();
+                address.setStreet("123 Main St");
+                address.setCity("Springfield");
+                address.setZipCode("12345");
+                return address;
+            }
+        }
