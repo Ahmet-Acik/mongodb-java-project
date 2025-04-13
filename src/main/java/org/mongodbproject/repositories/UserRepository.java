@@ -2,6 +2,7 @@ package org.mongodbproject.repositories;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.InsertOneResult;
 import org.bson.Document;
 import org.bson.types.ObjectId;
 import org.mongodbproject.config.MongoDBConnection;
@@ -22,17 +23,19 @@ public class UserRepository {
         logger.info("Connected to MongoDB collection: users");
     }
 
-    public void insertUser(User user) {
-        try {
-            logger.info("Inserting user: {}", user);
-            Document document = user.toDocument(); // Convert User to MongoDB Document
-            collection.insertOne(document); // Insert the document into the collection
-            user.setId(document.getObjectId("_id").toHexString()); // Set the generated ID back to the User object
-            logger.info("User inserted successfully: {}", user);
-        } catch (Exception e) {
-            logger.error("Error inserting user: {}", e.getMessage(), e);
+public void insertUser(User user) {
+            try {
+                logger.info("Inserting user: {}", user);
+                Document document = user.toDocument(); // Convert User to MongoDB Document
+                InsertOneResult result = collection.insertOne(document); // Insert the document into the collection
+                if (result.getInsertedId() != null) {
+                    user.setId(result.getInsertedId().asObjectId().getValue().toHexString()); // Set the generated ID back to the User object
+                }
+                logger.info("User inserted successfully: {}", user);
+            } catch (Exception e) {
+                logger.error("Error inserting user: {}", e.getMessage(), e);
+            }
         }
-    }
 
     public User getUserById(String someUserId) {
         try {
