@@ -96,6 +96,14 @@ public class UserRepositoryTest {
         assertThat(retrievedUser.getHobbies()).containsExactly("Reading", "Traveling");
     }
 
+    @Test
+    public void testGetAllUsersWhenCollectionIsEmpty() {
+        UserRepository userRepository = new UserRepository();
+
+        List<User> users = userRepository.getAllUsers();
+
+        assertThat(users).isEmpty();
+    }
 
 
 }
